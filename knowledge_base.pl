@@ -15,4 +15,5 @@ large_model(8, dall-e).
  * modality\2 Id, [Modality]
  */
 modality(1, [texts, documents, tables]).
-modality(2, [texts, images, voice]).
+modality(2, [texts, documents, images, voice]).
+modality(3, [texts, documents, images]).
