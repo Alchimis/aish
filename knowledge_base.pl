@@ -71,7 +71,8 @@ role(1, ["Генерирует "]).
 /**
  * context_windows_size\2 VersionId, [Size]
  */
-
+context_windows_size(4,  [128000, "128K"]).
+context_windows_size(12, [200000, "200K"]).
 
 
 /**
@@ -80,3 +81,15 @@ role(1, ["Генерирует "]).
 availability(proprietary, [2, 3, 5, 7]).
 availability(openSource, [4, 6, 9]).
 availability(limitedAccess, [1, 8]).
+
+
+model_context_window_size(ModelId, Size):-
+  version(VersionId, ModelId, _),
+  context_windows_size(VersionId, Size).
+
+model_by_modality(Modality, ModelId):-
+  modality(ModelId, Modalitys),
+  member(Modality, Modalitys).
+
+models_by_modality(Modality, Models):-
+  findall(X, model_by_modality(Modality, X), Models).
