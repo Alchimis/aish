@@ -235,7 +235,6 @@ find_model(Id, model(ModelName, Versions, Description, Modality)):-
     modality(Id, Modality).
 
 % -----
-
 % Главный предикат для запуска системы
 start :-
     writeln('Добро пожаловать в систему подбора нейросетевых моделей!'),
@@ -260,19 +259,19 @@ ask_modality(Requirements, NewRequirements) :-
     writeln('1. Только текст'),
     writeln('2. Текст и изображения'),
     writeln('3. Текст, изображения и голос'),
-    writeln('4. Другое (указать)'),
+    writeln('4. Другое сочетание'),
     read(ModalityChoice),
     process_modality_choice(ModalityChoice, Modality),
     NewRequirements = [modality(Modality)|Requirements].
 
-process_modality_choice(1, only_texts).
+process_modality_choice(1, only_text).
 process_modality_choice(2, [texts, images]).
 process_modality_choice(3, [texts, images, voice]).
 process_modality_choice(4, Other) :-
-    write('Укажите нужные модальности через запятую: '),
+    write('Укажите нужные модальности в виде списка, например, [texts,voice]: '),
     read(Other).
 
-% Вопрос о способе развертывания
+% Остальные вопросы (без изменений)
 ask_deployment(Requirements, NewRequirements) :-
     nl,
     writeln('Как вы планируете использовать модель?'),
@@ -281,13 +280,14 @@ ask_deployment(Requirements, NewRequirements) :-
     writeln('3. Не имеет значения'),
     read(DeploymentChoice),
     process_deployment_choice(DeploymentChoice, Deployment),
-    NewRequirements = [deployment(Deployment)|Requirements].
+    (Deployment \= none -> 
+        NewRequirements = [deployment(Deployment)|Requirements];
+        NewRequirements = Requirements).
 
 process_deployment_choice(1, cloud).
 process_deployment_choice(2, local).
-process_deployment_choice(3, _).
+process_deployment_choice(3, none).
 
-% Вопрос о доступности
 ask_availability(Requirements, NewRequirements) :-
     nl,
     writeln('Какой тип доступа предпочтителен?'),
@@ -297,14 +297,15 @@ ask_availability(Requirements, NewRequirements) :-
     writeln('4. Не имеет значения'),
     read(AvailabilityChoice),
     process_availability_choice(AvailabilityChoice, Availability),
-    NewRequirements = [availability(Availability)|Requirements].
+    (Availability \= none -> 
+        NewRequirements = [availability(Availability)|Requirements];
+        NewRequirements = Requirements).
 
 process_availability_choice(1, openSource).
 process_availability_choice(2, proprietary).
 process_availability_choice(3, limitedAccess).
-process_availability_choice(4, _).
+process_availability_choice(4, none).
 
-% Вопрос о контекстном окне
 ask_context_window(Requirements, NewRequirements) :-
     nl,
     writeln('Важно ли вам большое контекстное окно (длина обрабатываемого текста)?'),
@@ -321,7 +322,6 @@ process_context_choice(1, 100000).
 process_context_choice(2, 8000).
 process_context_choice(3, none).
 
-% Вопрос о бюджете
 ask_budget(Requirements, NewRequirements) :-
     nl,
     writeln('Есть ли у вас бюджет на использование модели?'),
@@ -342,7 +342,7 @@ process_budget_choice(3, none).
 recommend_model(Requirements) :-
     findall(Model-Name, (
         large_model(Model, Name),
-        satisfies_all(Model, Requirements)
+        satisfies_all_requirements(Model, Requirements)
     ), Models),
     
     (Models = [] ->
@@ -359,55 +359,53 @@ recommend_model(Requirements) :-
         ; true)
     ).
 
-% Проверка, что модель удовлетворяет всем требованиям
-satisfies_all(Model, Requirements) :-
+% Основное правило фильтрации - модель должна удовлетворять ВСЕМ требованиям
+satisfies_all_requirements(Model, Requirements) :-
     forall(
         member(Requirement, Requirements),
-        satisfies(Model, Requirement)
+        satisfies_requirement(Model, Requirement)
     ).
 
-% Правила удовлетворения требований
-satisfies(Model, modality(only_texts)) :-
+% Правила для каждого типа требований
+satisfies_requirement(Model, modality(only_text)) :-
+    !,
     modality(Model, Modalities),
-    Modalities == [texts],
-    writeln('Только тексты'), !. % Строго только текст
+    Modalities == [texts].
 
-satisfies(Model, modality([texts, images])) :- % Для случая, когда текст - одна из модальностей
-    modality(Model, Modalities),
-    Modalities == [texts, images],!.
-
-satisfies(Model, modality(Mod)) :-
-    is_list(Mod),
+satisfies_requirement(Model, modality(Modalities)) :-
+    is_list(Modalities),
+    !,
     modality(Model, ModelModalities),
-    subset(Mod, ModelModalities), !.
+    subset(Modalities, ModelModalities).
 
-satisfies(Model, deployment(Type)) :-
-    deployment(Type, Models),
-    member(Model, Models).
+satisfies_requirement(Model, deployment(Type)) :-
+    !,
+    deployment(Type, ModelIds),
+    member(Model, ModelIds).
 
-satisfies(Model, availability(Type)) :-
-    availability(Type, Models),
-    member(Model, Models).
+satisfies_requirement(Model, availability(Type)) :-
+    !,
+    availability(Type, ModelIds),
+    member(Model, ModelIds).
 
-satisfies(Model, context_window(Size)) :-
-    version(VersionId, Model, _),
-    context_windows_size(VersionId, [WindowSize|_]),
-    WindowSize >= Size.
+satisfies_requirement(Model, context_window(MinSize)) :-
+    !,
+    (version(VersionId, Model, _),
+     context_windows_size(VersionId, [Size|_]),
+     Size >= MinSize).
 
-satisfies(Model, budget(free)) :-
+satisfies_requirement(Model, budget(free)) :-
+    !,
     \+ (version(VersionId, Model, _), pricing(VersionId, _, _)).
 
-satisfies(_, budget(commercial)). % Все модели подходят, если есть бюджет
-satisfies(_, budget(none)). % Не фильтруем по бюджету
-satisfies(_, _). % Для неопределенных требований
+satisfies_requirement(_, budget(commercial)) :- !.
 
-% Вывод списка моделей
+% Остальные вспомогательные предикаты
 print_models([]).
 print_models([Model-Name|Rest]) :-
     format('~w: ~w~n', [Model, Name]),
     print_models(Rest).
 
-% Запрос подробной информации о модели
 ask_model_details(Models) :-
     nl,
     writeln('Введите ID модели для подробной информации (0 для выхода):'),
@@ -415,7 +413,7 @@ ask_model_details(Models) :-
     (ModelId = 0 -> 
         true
     ; 
-        (get_assoc(ModelId, Models, Name) ->
+        (member(ModelId-Name, Models) ->
             show_model_details(ModelId, Name),
             ask_model_details(Models)
         ;
@@ -424,58 +422,46 @@ ask_model_details(Models) :-
         )
     ).
 
-% Отображение подробной информации о модели
 show_model_details(ModelId, Name) :-
     nl,
     format('Подробная информация о модели ~w (~w):~n', [Name, ModelId]),
     
-    % Основная информация
-    description(ModelId, Descriptions),
-    writeln('Описание:'),
-    print_list(Descriptions),
+    (description(ModelId, Descriptions) ->
+        writeln('Описание:'),
+        print_list(Descriptions)
+    ; true),
     
-    % Создатели
-    createdBy(ModelId, Creators),
-    format('Создатель: ~w~n', [Creators]),
+    (createdBy(ModelId, Creators) ->
+        format('Создатель: ~w~n', [Creators])
+    ; true),
     
-    % Версии
-    findall(Version, version(_, ModelId, Version), Versions),
-    writeln('Доступные версии:'),
-    print_list(Versions),
+    (findall(Version, version(_, ModelId, Version), Versions) ->
+        writeln('Доступные версии:'),
+        print_list(Versions)
+    ; true),
     
-    % Модальности
-    modality(ModelId, Modalities),
-    format('Поддерживаемые модальности: ~w~n', [Modalities]),
+    (modality(ModelId, Modalities) ->
+        format('Поддерживаемые модальности: ~w~n', [Modalities])
+    ; true),
     
-    % Контекстное окно (если есть)
     (version(VersionId, ModelId, _),
      context_windows_size(VersionId, [Size, SizeStr|_]) ->
         format('Размер контекстного окна: ~w (~w)~n', [Size, SizeStr])
-    ;
-        true
-    ),
+    ; true),
     
-    % Аппаратные требования (если есть)
     (version(VersionId, ModelId, _),
      min_ram(VersionId, RAM) ->
         format('Минимальная RAM: ~w GB~n', [RAM])
-    ;
-        true
-    ),
+    ; true),
     
     (version(VersionId, ModelId, _),
      min_vram(VersionId, VRAM) ->
         format('Минимальная VRAM: ~w GB~n', [VRAM])
-    ;
-        true
-    ),
+    ; true),
     
     nl.
 
-% Вспомогательный предикат для печати списка
 print_list([]).
 print_list([H|T]) :-
     writeln(H),
     print_list(T).
-
-% -----
