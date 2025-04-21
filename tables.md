@@ -181,3 +181,11 @@ deployment: Cloud
 modality: Texts, Images
 model_size: Very large
 tasks: Image generation
+
+frame: LocalModel
+availability: Open Source
+deployment: Local
+modality: Texts
+context_window_size: Large
+model_size: Large, Very large
+tasks: Texts generation, Text understanding

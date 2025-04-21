@@ -39,10 +39,16 @@ deep_floyd_IF(model_size, [giant]).
 
 local_model(availability, open_source).
 local_model(deployment, local).
-local_model(modality, texts).
+local_model(modality, [texts]).
 local_model(context_window_size, Large).
 local_model(model_size, [large, very_large]).
 local_model(tasks, [text_generation, text_understanding]).
 
+llama(a_kind_of, local_model).
 
+mistral(a_kind_of, local_model).
 
+bert(a_kind_of, local_model).
+bert(context_window_size, small).
+bert(model_size, middle).
+bert(tasks, text_understanding).
