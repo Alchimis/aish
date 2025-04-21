@@ -1,0 +1,91 @@
+@startuml
+
+' Настройки отображения
+skinparam classAttributeIconSize 0
+hide empty members
+left to right direction
+
+' Основные классы (категории моделей)
+class large_model {
+  + availability: proprietary
+  + deployment: cloud
+  + modality: [texts, documents]
+  + context_window_size: very_large
+  + model_size: [large, very_large, giant]
+  + tasks: [text_generation, text_understanding]
+}
+
+class image_generator {
+  + availability: proprietary
+  + deployment: cloud
+  + modality: [texts, images]
+  + model_size: very_large
+  + tasks: [image_generation]
+}
+
+class local_model {
+  + availability: open_source
+  + deployment: local
+  + modality: [texts]
+  + context_window_size: Large
+  + model_size: [large, very_large]
+  + tasks: [text_generation, text_understanding]
+}
+
+' Конкретные модели ИИ
+class deep_seek {
+  + availability: limited_access
+  + deployment: [local, cloud]
+  + modality: [texts, documents, tables]
+}
+
+class chat_GPT {
+  + modality: [texts, documents, images, voice]
+}
+
+class claude {
+  + modality: [texts, documents, images]
+  + model_size: [very_large, giant]
+}
+
+class bard {
+  + availability: limited_access
+  + model_size: very_large
+}
+
+class midjourney
+class dall_e
+class deep_floyd_IF {
+  + availability: open_source
+  + deployment: [local]
+  + model_size: [giant]
+}
+
+class llama
+class mistral
+class bert {
+  + context_window_size: small
+  + model_size: middle
+  + tasks: text_understanding
+}
+
+' Наследование (отношение "a_kind_of")
+deep_seek --|> large_model
+chat_GPT --|> large_model
+claude --|> large_model
+bard --|> large_model
+
+midjourney --|> image_generator
+dall_e --|> image_generator
+deep_floyd_IF --|> image_generator
+
+llama --|> local_model
+mistral --|> local_model
+bert --|> local_model
+
+' Примечания
+note top of large_model: Категория: Большие языковые модели (LLM)
+note top of image_generator: Категория: Генераторы изображений
+note top of local_model: Категория: Локальные/открытые модели
+
+@enduml

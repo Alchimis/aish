@@ -90,6 +90,14 @@
 | LLaMA        | Генерация текста, Понимание текста |
 | DeepFloyd IF | Генерация изображений              |
 
+| Temp | FC	P(H=true)	P(H=false)
+|-------|----|
+low	none	0.30	0.70
+low	strict	0.05	0.95
+high	none	0.85	0.15
+high	strict	0.40	0.60
+
+
 frame: DeepSeek
 availability: limitedAccess
 deployment: Local, Cloud

@@ -1,0 +1,67 @@
+@startuml Bayesian Network for AI Models
+
+skinparam nodesep 10
+skinparam ranksep 50
+
+together {
+  node "Model_Type" as MT {
+    Values: large_model, image_generator, local_model
+  }
+
+  node "Availability" as Av {
+    Values: proprietary, limited_access, open_source
+  }
+
+  node "Deployment" as Dep {
+    Values: cloud, local, [local,cloud]
+  }
+}
+
+together {
+  node "Modality" as Mod {
+    Values: texts, documents, images, voice, tables, [...combinations]
+  }
+
+  node "Context_Window" as CW {
+    Values: very_large, large, small
+  }
+
+  node "Model_Size" as MS {
+    Values: large, very_large, giant, middle
+  }
+
+  node "Tasks" as Ts {
+    Values: text_generation, text_understanding, image_generation
+  }
+}
+
+node "Specific_Model" as SM {
+  Values: deep_seek, chat_GPT, claude, bard,\n midjourney, dall_e, deep_floyd_IF,\n llama, mistral, bert
+}
+
+' Connections
+MT --> Av
+MT --> Dep
+MT --> Mod
+MT --> CW
+MT --> MS
+MT --> Ts
+MT --> SM
+
+SM --> Av
+SM --> Dep
+SM --> Mod
+SM --> CW
+SM --> MS
+SM --> Ts
+
+' Example probabilities (simplified)
+note "P(Model_Type):\n  large_model: 0.5\n  image_generator: 0.3\n  local_model: 0.2" as N1
+note "P(Availability|Model_Type):\n  large_model → proprietary:0.7\n  image_generator → open_source:0.33\n  local_model → open_source:1.0" as N2
+note "P(Specific_Model|Model_Type):\n  large_model → chat_GPT:0.25\n  image_generator → midjourney:0.33\n  local_model → llama:0.33" as N3
+
+N1 ~~ MT
+N2 ~~ Av
+N3 ~~ SM
+
+@enduml

@@ -1,3 +1,13 @@
+:- dynamic large_model/2.
+:- dynamic modality/2.
+:- dynamic type/2.
+:- dynamic description/2.
+:- dynamic createdBy/2.
+:- dynamic context_windows_size/2.
+:- dynamic availability/2.
+:- dynamic deployment/2.
+
+
 /**
  * large_model\2 Id, ModelName
  */
@@ -263,16 +273,14 @@ ask_availability(Availability) :-
 find_models(TaskType, Modality, Availability, Models) :-
     findall(Model, (
         large_model(_, Model),
-        (TaskType == any; (type(Model, TaskTypes), member(TaskType, TaskTypes))),
-        (Modality == any; (modality(Model, Modalities), member(Modality, Modalities))),
-        (Availability == any; (
+        (TaskType == any -> true; (type(Model, TaskTypes), member(TaskType, TaskTypes))),
+        (Modality == any -> true; (modality(Model, Modalities), member(Modality, Modalities))),
+        (Availability == any -> true; (
             large_model(Id, Model),
-            availability(Avail, ModelsIds),
-            member(Id, ModelsIds),
-            Avail == Availability
-        ))
-    ), Models).
-
+            (availability(Availability, ModelsIds), member(Id, ModelsIds))
+        )
+    ), Models)).
+    
 % Вывод результатов
 show_results([]) :-
     nl, writeln('К сожалению, по вашим критериям не найдено подходящих моделей.').
@@ -289,11 +297,122 @@ show_results(Models) :-
         nl
     )).
 
-% Вспомогательная функция для чтения ввода
-read_line_to_string(Stream, String) :-
-    read_line_to_codes(Stream, Codes),
-    string_codes(String, Codes).
+add_large_model(ModelName) :-
+    (findall(Id, large_model(Id, _), Ids),  % Получаем все существующие ID
+    (Ids = [] -> NewId = 1;                 % Если база пуста, начинаем с 1
+     max_list(Ids, MaxId), NewId is MaxId + 1), % Иначе +1 к максимальному
+    assertz(large_model(NewId, ModelName)),
+    format('Добавлена новая модель: ID=~w, Name=~w~n', [NewId, ModelName])).
 
-% Запуск помощника
+% Добавление модальности для модели
+add_modality(ModelName, Modality) :-
+    (modality(ModelName, Modalities) ->
+        (member(Modality, Modalities) -> 
+            writeln('Эта модальность уже существует для данной модели');
+            retract(modality(ModelName, Modalities)),
+            NewModalities = [Modality|Modalities],
+            assertz(modality(ModelName, NewModalities)));
+    assertz(modality(ModelName, [Modality]))).
+
+% Добавление типа задачи для модели
+add_task_type(ModelName, TaskType) :-
+    (type(ModelName, TaskTypes) ->
+        (member(TaskType, TaskTypes) -> 
+            writeln('Этот тип задачи уже существует для данной модели');
+            retract(type(ModelName, TaskTypes)),
+            NewTaskTypes = [TaskType|TaskTypes],
+            assertz(type(ModelName, NewTaskTypes)));
+    assertz(type(ModelName, [TaskType]))).
+
+% Добавление описания модели
+add_description(ModelName, Description) :-
+    (description(ModelName, Descriptions) ->
+        retract(description(ModelName, Descriptions)),
+    assertz(description(ModelName, [Description|Descriptions]));
+    assertz(description(ModelName, [Description]))).
+
+% Добавление создателя модели
+add_creator(ModelName, Creator) :-
+    (createdBy(ModelName, Creators) ->
+        (member(Creator, Creators) -> 
+            writeln('Этот создатель уже указан для данной модели');
+            retract(createdBy(ModelName, Creators)),
+            NewCreators = [Creator|Creators],
+            assertz(createdBy(ModelName, NewCreators)));
+    assertz(createdBy(ModelName, [Creator]))).
+
+% Добавление размера контекстного окна
+add_context_window(ModelName, WindowSize) :-
+    (context_windows_size(ModelName, WindowSizes) ->
+        retract(context_windows_size(ModelName, WindowSizes)),
+    assertz(context_windows_size(ModelName, [WindowSize|WindowSizes]));
+    assertz(context_windows_size(ModelName, [WindowSize]))).
+
+% Добавление доступности модели
+add_availability(ModelName, Availability) :-
+    large_model(Id, ModelName),
+    (availability(Availability, Models) ->
+        (member(Id, Models) -> 
+            writeln('Эта доступность уже указана для данной модели');
+            retract(availability(Availability, Models)),
+            NewModels = [Id|Models],
+            assertz(availability(Availability, NewModels)));
+    assertz(availability(Availability, [Id]))).
+
+% Интерфейс для добавления новой модели
+add_new_model :-
+    writeln('Добавление новой модели ИИ в базу знаний:'),
+    nl,
+    writeln('Введите название модели:'),
+    read_line_to_string(user_input, ModelName),
+    add_large_model(ModelName),
+
+    % Добавление модальностей
+    writeln('Добавить модальности модели (через запятую):'),
+    writeln('Доступные варианты: texts, documents, images, voice, tables'),
+    read_line_to_string(user_input, ModalitiesStr),
+    split_string(ModalitiesStr, ",", " ", ModalityList),
+    forall(member(Modality, ModalityList), 
+           add_modality(ModelName, Modality)),
+
+    % Добавление типов задач
+    writeln('Добавить типы задач модели (через запятую):'),
+    writeln('Доступные варианты: text_generation, text_understanding, image_generation'),
+    read_line_to_string(user_input, TasksStr),
+    split_string(TasksStr, ",", " ", TaskList),
+    forall(member(Task, TaskList), 
+           add_task_type(ModelName, Task)),
+
+    % Добавление описания
+    writeln('Введите описание модели:'),
+    read_line_to_string(user_input, Description),
+    add_description(ModelName, Description),
+
+    % Добавление создателей
+    writeln('Добавить создателей модели (через запятую):'),
+    read_line_to_string(user_input, CreatorsStr),
+    split_string(CreatorsStr, ",", " ", CreatorList),
+    forall(member(Creator, CreatorList), 
+           add_creator(ModelName, Creator)),
+
+    % Добавление размера контекстного окна
+    writeln('Введите размер контекстного окна (small, large, very_large):'),
+    read_line_to_string(user_input, WindowSize),
+    add_context_window(ModelName, WindowSize),
+
+    % Добавление доступности
+    writeln('Введите доступность модели (proprietary, openSource, limitedAccess):'),
+    read_line_to_string(user_input, Availability),
+    add_availability(ModelName, Availability),
+
+    writeln('Модель успешно добавлена!').
+
+% Обновленный стартовый предикат с меню
 start :-
-    model_selection_assistant.
+    writeln('Выберите действие:'),
+    writeln('1. Подбор модели ИИ'),
+    writeln('2. Добавить новую модель'),
+    read_line_to_string(user_input, Choice),
+    (Choice = "1" -> model_selection_assistant;
+     Choice = "2" -> add_new_model;
+     (writeln('Некорректный выбор'), start)).
