@@ -1,0 +1,20 @@
+{
+	"nodes":[
+		{"id":"dc73eae62e842abc","x":-223,"y":167,"width":250,"height":60,"type":"text","text":"Нейросеть выдаёт ложный факт"},
+		{"id":"5c472fee6749cc45","x":140,"y":167,"width":250,"height":60,"type":"text","text":"Нейросеть выдаёт устаревщий факт"},
+		{"id":"2167b4d7925d7b7c","x":-500,"y":167,"width":250,"height":60,"type":"text","text":"Нейросеть отвечает корректно"},
+		{"id":"366427a0a516f7b8","x":-223,"y":-100,"width":250,"height":60,"type":"text","text":"Пользователь задаёт вопрос"},
+		{"id":"2e2f7e9a8b57ad46","x":-500,"y":358,"width":250,"height":60,"type":"text","text":"Снижение температуры"},
+		{"id":"eac92f869c5df10b","x":-160,"y":358,"width":250,"height":60,"type":"text","text":"Проверка фактов"},
+		{"id":"c1684b3e8e5cc675","x":200,"y":358,"width":250,"height":60,"type":"text","text":"Обновление контекста"}
+	],
+	"edges":[
+		{"id":"a6d0c285cc54cf9e","fromNode":"366427a0a516f7b8","fromSide":"bottom","toNode":"2167b4d7925d7b7c","toSide":"top"},
+		{"id":"d02a657019a30c5b","fromNode":"366427a0a516f7b8","fromSide":"bottom","toNode":"dc73eae62e842abc","toSide":"top"},
+		{"id":"03863f5d2b45001f","fromNode":"366427a0a516f7b8","fromSide":"bottom","toNode":"5c472fee6749cc45","toSide":"top"},
+		{"id":"f356fafb08b61e5d","fromNode":"dc73eae62e842abc","fromSide":"bottom","toNode":"2e2f7e9a8b57ad46","toSide":"top"},
+		{"id":"22c1ef3193b5766c","fromNode":"dc73eae62e842abc","fromSide":"bottom","toNode":"eac92f869c5df10b","toSide":"top"},
+		{"id":"e913d350763c3d24","fromNode":"5c472fee6749cc45","fromSide":"bottom","toNode":"eac92f869c5df10b","toSide":"top"},
+		{"id":"5534b2bb2d9fb5d5","fromNode":"5c472fee6749cc45","fromSide":"bottom","toNode":"c1684b3e8e5cc675","toSide":"top"}
+	]
+}
