@@ -8,9 +8,7 @@
 :- dynamic deployment/2.
 
 
-/**
- * large_model\2 Id, ModelName
- */
+% large_model\2 Id, ModelName
 large_model(1, deepSeek).
 large_model(2, chatGpt).
 large_model(3, claude).
@@ -22,9 +20,7 @@ large_model(8, bard).
 large_model(9, llama).
 large_model(10, deep_floyd_IF).
 
-/**
- * modality\2 Id, [Modality]
- */
+% modality\2 Id, [Modality]
 modality(deepSeek, [texts, documents, tables]).
 modality(chatGpt,  [texts, documents, images, voice]).
 modality(claude,   [texts, documents, images]). 
@@ -38,9 +34,7 @@ modality(llama,         [texts]).
 modality(deep_floyd_IF, [texts]).
  
 
-/**
- * tasks\2 TypeId, Type 
- */
+% tasks\2 TypeId, Type 
 type(deepSeek, [text_generation, text_understanding]).
 type(chatGpt,  [text_generation, text_understanding]).
 type(claude,   [text_generation, text_understanding]).
@@ -53,9 +47,7 @@ type(bard,          [text_generation, text_understanding]).
 type(llama,         [text_generation, text_understanding]).
 type(deep_floyd_IF, [image_generation]).
 
-/**
- * description\2 ModelId, [Description]
- */
+% description\2 ModelId, [Description]
 description(deepSeek, ["DeepSeek – мощная нейросеть для генерации текста, анализа данных и поиска информации, разработанная китайской компанией DeepSeek."]).
 description(chatGpt,  ["ChatGPT – чат-бот от OpenAI, основанный на GPT, способный вести диалог, писать код, анализировать текст и помогать в различных задачах."]).
 description(claude,   ["Claude – ИИ-ассистент от Anthropic, оптимизированный для безопасного и полезного взаимодействия, с акцентом на естественность ответов"]).
@@ -68,9 +60,7 @@ description(bard,          ["Bard (теперь Gemini) – чат-бот от G
 description(llama,         ["Llama – серия открытых языковых моделей от Meta (Facebook), используемая для исследований и коммерческих решений."])
 description(deep_floyd_IF, ["DeepFloyd IF — это мощная тексто-в-изображение модель, разработанная исследовательской группой DeepFloyd. Она основана на каскадной диффузионной архитектуре и отличается высокой детализацией и качеством генерируемых изображений."])
 
-/**
- * createdBy\2 ModelId, [Author]
- */
+% createdBy\2 ModelId, [Author]
 createdBy(deepSeek, [deepSeek]).
 createdBy(chatGpt,  [openAi]).
 createdBy(claude,   [anthropic]).
@@ -84,9 +74,7 @@ createdBy(llama,         [meta]).
 createdBy(deep_floyd_IF, [deepFloyd, stable_Diffusion]).
 
 
-/**
- * context_windows_size\2 VersionId, [Size]
- */
+% context_windows_size\2 VersionId, [Size]
 context_windows_size(deepSeek, [very_large]).
 context_windows_size(chatGpt,  [very_large]).
 context_windows_size(claude,   [very_large]).
@@ -96,16 +84,12 @@ context_windows_size(mistral, [large]).
 context_windows_size(bard,    [very_large]).
 context_windows_size(llama,   [large]).
 
-/**
- * availability\2 Availability, [ModelId]
- */
+% availability\2 Availability, [ModelId]
 availability(proprietary,   [2, 3, 5, 7]).
 availability(openSource,    [4, 6, 9, 10]).
 availability(limitedAccess, [1, 8]).
 
-/**
- * deployment(Type, [ModelId])
- */
+% deployment(Type, [ModelId])
 deployment(_local, [1, 4, 6, 9, 10]).
 deployment(cloud, [1, 2, 3, 5, 7, 8]).
 
@@ -279,7 +263,7 @@ find_models(TaskType, Modality, Availability, Models) :-
             large_model(Id, Model),
             (availability(Availability, ModelsIds), member(Id, ModelsIds))
         )
-    ), Models)).
+    )), Models).
     
 % Вывод результатов
 show_results([]) :-

@@ -4,24 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "056556aaea1c3721",
+        "id": "8f89465485aa286a",
         "type": "tabs",
         "children": [
           {
-            "id": "c01d7400d76aea08",
+            "id": "6e149875cd8bbaf5",
             "type": "leaf",
             "state": {
-              "type": "canvas",
+              "type": "markdown",
               "state": {
-                "file": "Untitled.canvas",
-                "viewState": {
-                  "x": 0,
-                  "y": 93,
-                  "zoom": 0
-                }
+                "file": "quiver dashboard/Квивер.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-layout-dashboard",
-              "title": "Untitled"
+              "icon": "lucide-file",
+              "title": "Квивер"
             }
           }
         ]
@@ -171,11 +168,30 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "c01d7400d76aea08",
+  "active": "6e149875cd8bbaf5",
   "lastOpenFiles": [
-    "baies.pl",
+    "Pasted image 20250515033832.png",
+    "Pasted image 20250515030226.png",
+    "Pasted image 20250515030109.png",
+    "Pasted image 20250515030019.png",
+    "Pasted image 20250515030006.png",
+    "Pasted image 20250515025710.png",
+    "Pasted image 20250515025608.png",
+    "Pasted image 20250515025520.png",
+    "Pasted image 20250515025454.png",
+    "quiver dashboard/Pasted image 20250515025323.png",
+    "quiver dashboard/Pasted image 20250515025213.png",
+    "quiver dashboard/Квивер.md",
+    "threads/Тред с ценой мототехники.md",
+    "quiver dashboard",
+    "threads/Тред с деталями для Дениса.md",
+    "переводы/Перемен.md",
+    "переводы/земля в илюминаторе.md",
+    "переводы",
     "Untitled.canvas",
-    "hLLVQnD147_VJx7qnHPJz3aFKb-KGWL1tq8vDhUJTCtUxR6xrnh_WCsBXGf5V2cA-XMYDhPDctw6lM_atERQN79f32AbXPkPc_dzvlVht8...WDfhvCM8knZxZ-Y-n3Tk1NdHsvKpmImroJwh5OtTfwibRkFqljbXcVl9G3VCvp6CyEAOuxdVrQk_EfvfxiGl1Vi0D-RdC2u-Dspzjdc4_8UXK2X6n0pDD8_W40.png",
+    "Untitled.md",
+    "threads",
+    "baies.pl",
     "tables.md"
   ]
 }
