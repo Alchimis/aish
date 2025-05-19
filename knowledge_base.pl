@@ -391,12 +391,20 @@ add_new_model :-
 
     writeln('Модель успешно добавлена!').
 
+write_models :-
+    findall(Model, large_model(_, Model), ModelList),
+    forall(member(Mod, ModelList),
+        writeln(Mod))
+
 % Обновленный стартовый предикат с меню
 start :-
     writeln('Выберите действие:'),
     writeln('1. Подбор модели ИИ'),
     writeln('2. Добавить новую модель'),
     read_line_to_string(user_input, Choice),
-    (Choice = "1" -> model_selection_assistant;
-     Choice = "2" -> add_new_model;
-     (writeln('Некорректный выбор'), start)).
+    (
+        Choice = "1" -> model_selection_assistant;
+        Choice = "2" -> add_new_model;
+        Choice = "3" -> write_models;
+     (writeln('Некорректный выбор'), start)),
+     start.
