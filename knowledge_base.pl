@@ -57,8 +57,8 @@ description(midjourney,    ["MidJourney – нейросеть для генер
 description(mistral,       ["Mistral – открытая языковая модель от французской компании Mistral AI, конкурирующая с GPT и Llama."]).
 description(dall-e,        ["DALL-E – ИИ от OpenAI, создающий изображения по текстовым описаниям, с поддержкой разных стилей и детализации."]).
 description(bard,          ["Bard (теперь Gemini) – чат-бот от Google на основе модели Gemini, предназначенный для поиска, анализа и генерации текста."]).
-description(llama,         ["Llama – серия открытых языковых моделей от Meta (Facebook), используемая для исследований и коммерческих решений."])
-description(deep_floyd_IF, ["DeepFloyd IF — это мощная тексто-в-изображение модель, разработанная исследовательской группой DeepFloyd. Она основана на каскадной диффузионной архитектуре и отличается высокой детализацией и качеством генерируемых изображений."])
+description(llama,         ["Llama – серия открытых языковых моделей от Meta (Facebook), используемая для исследований и коммерческих решений."]).
+description(deep_floyd_IF, ["DeepFloyd IF — это мощная тексто-в-изображение модель, разработанная исследовательской группой DeepFloyd. Она основана на каскадной диффузионной архитектуре и отличается высокой детализацией и качеством генерируемых изображений."]).
 
 % createdBy\2 ModelId, [Author]
 createdBy(deepSeek, [deepSeek]).
@@ -174,7 +174,7 @@ find_models_by_availability(Availability, Models) :-
 
 get_full_model_info(ModelName, Info) :-
     large_model(Id, ModelName),
-    
+
     % Опциональные поля (если их нет — значение unknown)
     (modality(ModelName, Modalities) -> true ; Modalities = unknown),
     (type(ModelName, TaskTypes) -> true ; TaskTypes = unknown),
@@ -208,8 +208,10 @@ model_selection_assistant :-
     % Шаг 3: Выбор доступности
     ask_availability(Availability),
     
+    ask_deployment(Deployment),
+
     % Шаг 4: Поиск подходящих моделей
-    find_models(TaskType, Modality, Availability, Models),
+    find_models(TaskType, Modality, Availability, Deployment, Models),
     
     % Шаг 5: Вывод результатов
     show_results(Models).
@@ -256,17 +258,37 @@ ask_availability(Availability) :-
      Choice = "4" -> Availability = any;
      (writeln('Некорректный выбор, попробуйте еще раз.'), ask_availability(Availability))).
 
+% Вопрос о модальности
+ask_deployment(Deployment) :-
+    nl, writeln('Вам нужна локальная или облачая сеть?'),
+    writeln('1. Локальная'),
+    writeln('2. Облачная'),
+    writeln('3. Не важно'),
+    read_line_to_string(user_input, Choice),
+    (Choice = "1" -> Deployment = _local;
+     Choice = "2" -> Deployment = cloud;
+     Choice = "3" -> Deployment = any;
+     (writeln('Некорректный выбор, попробуйте еще раз.'), ask_deployment(Deployment))).
+
+
 % Поиск моделей по критериям
-find_models(TaskType, Modality, Availability, Models) :-
+find_models(TaskType, Modality, Availability, Deployment, Models) :-
     findall(Model, (
         large_model(_, Model),
         (TaskType == any -> true; (type(Model, TaskTypes), member(TaskType, TaskTypes))),
         (Modality == any -> true; (modality(Model, Modalities), member(Modality, Modalities))),
-        (Availability == any -> true; (
-            large_model(Id, Model),
-            (availability(Availability, ModelsIds), member(Id, ModelsIds))
-        )
-    )), Models).
+        (
+        	Availability == any -> true; (
+            	large_model(Id, Model),
+            	(availability(Availability, ModelsIds), member(Id, ModelsIds))
+        	)
+        ),
+    	(
+        	Deployment == any -> true; (
+            	large_model(Id, Model),
+            	(deployment(Availability, DeploymentModelsIds), member(Id, DeploymentModelsIds))
+        	)
+        )), Models).
     
 % Вывод результатов
 show_results([]) :-
