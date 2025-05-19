@@ -174,12 +174,15 @@ find_models_by_availability(Availability, Models) :-
 
 get_full_model_info(ModelName, Info) :-
     large_model(Id, ModelName),
-    modality(ModelName, Modalities),
-    type(ModelName, TaskTypes),
-    description(ModelName, Description),
-    createdBy(ModelName, Creators),
-    (context_windows_size(ModelName, WindowSize) -> true; WindowSize = unknown),
-    (availability(Availability, Models), member(Id, Models) -> true; Availability = unknown),
+    
+    % Опциональные поля (если их нет — значение unknown)
+    (modality(ModelName, Modalities) -> true ; Modalities = unknown),
+    (type(ModelName, TaskTypes) -> true ; TaskTypes = unknown),
+    (description(ModelName, Description) -> true ; Description = unknown),
+    (createdBy(ModelName, Creators) -> true ; Creators = unknown),
+    (context_windows_size(ModelName, WindowSize) -> true ; WindowSize = unknown),
+    (availability(Availability, Models), member(Id, Models) -> true ; Availability = unknown),
+
     Info = [
         id-Id,
         model-ModelName,
@@ -271,15 +274,33 @@ show_results([]) :-
 
 show_results(Models) :-
     nl, writeln('Подходящие модели:'), nl,
-    forall(member(Model, Models), (
-        get_full_model_info(Model, Info),
-        format('Модель: ~w~n', [Model]),
-        member(modalities-Mods, Info), format('Модальности: ~w~n', [Mods]),
-        member(task_types-Tasks, Info), format('Задачи: ~w~n', [Tasks]),
-        member(availability-Avail, Info), format('Доступность: ~w~n', [Avail]),
-        member(description-[Desc], Info), format('Описание: ~w~n', [Desc]),
-        nl
-    )).
+    forall(
+        member(Model, Models),
+        (
+            get_full_model_info(Model, Info),
+            format('Модель: ~w~n', [Model]),
+            
+            % Получаем значения или 'unknown', если поле отсутствует
+            (member(modalities-Mods, Info) -> true ; Mods = unknown),
+            format('Модальности: ~w~n', [Mods]),
+            
+            (member(task_types-Tasks, Info) -> true ; Tasks = unknown),
+            format('Задачи: ~w~n', [Tasks]),
+            
+            (member(availability-Avail, Info) -> true ; Avail = unknown),
+            format('Доступность: ~w~n', [Avail]),
+            
+            % Особый случай для description (если это список)
+            (member(description-Descs, Info) -> 
+                (Descs = [Desc|_] -> true ; Desc = Descs)
+            ; 
+                Desc = unknown
+            ),
+            format('Описание: ~w~n', [Desc]),
+            
+            nl
+        )
+    ).
 
 add_large_model(ModelName) :-
     (findall(Id, large_model(Id, _), Ids),  % Получаем все существующие ID
@@ -393,8 +414,8 @@ add_new_model :-
 
 write_models :-
     findall(Model, large_model(_, Model), ModelList),
-    forall(member(Mod, ModelList),
-        writeln(Mod))
+    show_results(ModelList).
+
 
 % Обновленный стартовый предикат с меню
 start :-
