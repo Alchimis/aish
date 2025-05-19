@@ -90,7 +90,7 @@ availability(openSource,    [4, 6, 9, 10]).
 availability(limitedAccess, [1, 8]).
 
 % deployment(Type, [ModelId])
-deployment(_local, [1, 4, 6, 9, 10]).
+deployment(local, [1, 4, 6, 9, 10]).
 deployment(cloud, [1, 2, 3, 5, 7, 8]).
 
 model_context_window_size(ModelId, Size):-
@@ -182,6 +182,7 @@ get_full_model_info(ModelName, Info) :-
     (createdBy(ModelName, Creators) -> true ; Creators = unknown),
     (context_windows_size(ModelName, WindowSize) -> true ; WindowSize = unknown),
     (availability(Availability, Models), member(Id, Models) -> true ; Availability = unknown),
+    (deployment(Deployment, DeploymentModels), member(Id, DeploymentModels) -> true ; Deployment = unknown),
 
     Info = [
         id-Id,
@@ -191,7 +192,8 @@ get_full_model_info(ModelName, Info) :-
         description-Description,
         creators-Creators,
         context_window-WindowSize,
-        availability-Availability
+        availability-Availability,
+        deployment-Deployment
     ].
 
 model_selection_assistant :-
@@ -265,7 +267,7 @@ ask_deployment(Deployment) :-
     writeln('2. Облачная'),
     writeln('3. Не важно'),
     read_line_to_string(user_input, Choice),
-    (Choice = "1" -> Deployment = _local;
+    (Choice = "1" -> Deployment = local;
      Choice = "2" -> Deployment = cloud;
      Choice = "3" -> Deployment = any;
      (writeln('Некорректный выбор, попробуйте еще раз.'), ask_deployment(Deployment))).
@@ -311,6 +313,9 @@ show_results(Models) :-
             
             (member(availability-Avail, Info) -> true ; Avail = unknown),
             format('Доступность: ~w~n', [Avail]),
+
+            (member(deployment-Dev, Info) -> true ; Dev = unknown),
+            format('Использование: ~w~n', [Dev]),
             
             % Особый случай для description (если это список)
             (member(description-Descs, Info) -> 
@@ -386,6 +391,25 @@ add_availability(ModelName, Availability) :-
             assertz(availability(Availability, NewModels)));
     assertz(availability(Availability, [Id]))).
 
+% Добавление доступности модели (local/cloud)
+add_deployment(ModelName, Deployment) :-
+    % Находим ID модели
+    large_model(Id, ModelName),
+    
+    % Проверяем существование записи о доступности
+    (deployment(Deployment, ExistingModels) ->
+        % Если модель уже есть в списке
+        (memberchk(Id, ExistingModels) -> 
+            format('Модель ~w уже имеет доступность ~w~n', [ModelName, Deployment])
+        ;
+            retract(deployment(Deployment, ExistingModels)),
+            NewModels = [Id|ExistingModels],
+            assertz(deployment(Deployment, NewModels)),
+            format('Добавлена доступность ~w для модели ~w~n', [Deployment, ModelName])
+        )
+    ).
+
+
 % Интерфейс для добавления новой модели
 add_new_model :-
     writeln('Добавление новой модели ИИ в базу знаний:'),
@@ -432,6 +456,12 @@ add_new_model :-
     read_line_to_string(user_input, Availability),
     add_availability(ModelName, Availability),
 
+    
+    % Добавление доступности
+    writeln('Введите использование модели модели (local, cloud):'),
+    read_line_to_string(user_input, Deployment),
+    add_deployment(ModelName, Deployment),
+
     writeln('Модель успешно добавлена!').
 
 write_models :-
@@ -444,6 +474,7 @@ start :-
     writeln('Выберите действие:'),
     writeln('1. Подбор модели ИИ'),
     writeln('2. Добавить новую модель'),
+    writeln('3. Посмотреть все модели'),
     read_line_to_string(user_input, Choice),
     (
         Choice = "1" -> model_selection_assistant;
